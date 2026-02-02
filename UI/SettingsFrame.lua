@@ -14,7 +14,16 @@ function ParchmentReader:CreateSettingsFrame()
     frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     frame.title:SetPoint("TOP", frame.TitleBg, 0, -3)
     frame.title:SetText("ParchmentReader Settings")
-    
+
+    -- Debug Info button (below close button)
+    local debugBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    debugBtn:SetSize(100, 22)
+    debugBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -10, -30)
+    debugBtn:SetText("Debug Info")
+    debugBtn:SetScript("OnClick", function()
+        ParchmentReader:ShowDebugInfo()
+    end)
+
     local yOffset = -40
     local spacing = 40
     

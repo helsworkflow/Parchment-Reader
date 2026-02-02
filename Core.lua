@@ -75,27 +75,12 @@ end
 
 -- Load custom books from saved data
 local function LoadCustomBooks()
-    print("|cFFFF0000DEBUG:|r LoadCustomBooks() called")
-
-    if not ParchmentReaderDB.customBooks then
-        print("|cFFFF0000DEBUG:|r ParchmentReaderDB.customBooks does NOT exist!")
-        return
-    end
-
-    -- Count how many books are in SavedVariables
-    local savedCount = 0
-    for _ in pairs(ParchmentReaderDB.customBooks) do
-        savedCount = savedCount + 1
-    end
-    print(string.format("|cFFFF0000DEBUG:|r Found %d books in SavedVariables", savedCount))
+    if not ParchmentReaderDB.customBooks then return end
 
     local count = 0
     for title, content in pairs(ParchmentReaderDB.customBooks) do
-        print(string.format("|cFFFF0000DEBUG:|r Loading book: '%s' (content length: %d)", title, #content))
-
         -- Wrap long lines automatically (max 100 chars per line)
         local lines = WrapText(content, 100)
-        print(string.format("|cFFFF0000DEBUG:|r  - Wrapped into %d lines", #lines))
 
         local pageSize = ParchmentReaderDB.pageSize or 25
         local totalPages = math.ceil(#lines / pageSize)
@@ -110,15 +95,6 @@ local function LoadCustomBooks()
 
         count = count + 1
     end
-
-    print(string.format("|cFFFF0000DEBUG:|r Loaded %d books into ParchmentReader.books", count))
-
-    -- Count total books in memory
-    local totalInMemory = 0
-    for _ in pairs(ParchmentReader.books) do
-        totalInMemory = totalInMemory + 1
-    end
-    print(string.format("|cFFFF0000DEBUG:|r Total books in memory: %d", totalInMemory))
 
     if count > 0 then
         print(string.format("|cFF33FF99ParchmentReader:|r Loaded %d custom book(s)", count))
@@ -413,8 +389,6 @@ _boot:SetScript("OnEvent", function(self, event, addonName)
 
     if event == "ADDON_LOADED" and addonName == "ParchmentReader" then
         -- SavedVariables теперь полностью загружены WoW
-        print("|cFFFF0000DEBUG:|r ADDON_LOADED event fired")
-
         -- Загружаем пользовательские книги из SavedVariables
         LoadCustomBooks()
 

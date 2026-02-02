@@ -10,3 +10,4 @@ Books\BookList.lua
 UI\ReaderFrame.lua
 UI\BookEditor.lua
 UI\SettingsFrame.lua
+UI\DebugFrame.lua
