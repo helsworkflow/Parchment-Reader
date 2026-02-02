@@ -106,44 +106,93 @@ end
 -- Вместо этого вызовем его в событии ADDON_LOADED.
 
 -- ── minimap icon ──────────────────────────────────────────────────────────
-local function PositionIcon(btn)
-    local angle  = math.rad(ParchmentReaderDB.minimapAngle or 315)
-    local radius = 80
-    btn:ClearAllPoints()
-    btn:SetPoint("CENTER", Minimap, "CENTER",
-        math.cos(angle) * radius,
-        math.sin(angle) * radius)
+
+-- Minimap shape definitions (handles round, square, and corner variants)
+local shape_quadrant_map = {
+    ["ROUND"]                 = {true, true, true, true},
+    ["SQUARE"]                = {false, false, false, false},
+    ["CORNER-TOPLEFT"]        = {false, false, false, true},
+    ["CORNER-TOPRIGHT"]       = {false, false, true, false},
+    ["CORNER-BOTTOMLEFT"]     = {false, true, false, false},
+    ["CORNER-BOTTOMRIGHT"]    = {true, false, false, false},
+    ["SIDE-LEFT"]             = {false, true, false, true},
+    ["SIDE-RIGHT"]            = {true, false, true, false},
+    ["SIDE-TOP"]              = {false, false, true, true},
+    ["SIDE-BOTTOM"]           = {true, true, false, false},
+    ["TRICORNER-TOPLEFT"]     = {false, true, true, true},
+    ["TRICORNER-TOPRIGHT"]    = {true, false, true, true},
+    ["TRICORNER-BOTTOMLEFT"]  = {true, true, false, true},
+    ["TRICORNER-BOTTOMRIGHT"] = {true, true, true, false},
+}
+
+local function UpdateButtonPosition(button)
+    local angle = math.rad(ParchmentReaderDB.minimapAngle or 200)
+    local x = math.cos(angle)
+    local y = math.sin(angle)
+    local q = 1
+
+    if x < 0 then q = q + 1 end
+    if y > 0 then q = q + 2 end
+
+    -- Get minimap shape (default is ROUND)
+    local shape = GetMinimapShape and GetMinimapShape() or "ROUND"
+    local quadTable = shape_quadrant_map[shape] or shape_quadrant_map["ROUND"]
+
+    -- Radius: half of minimap width + 10px offset
+    local w = (Minimap:GetWidth() / 2) + 10
+    local h = (Minimap:GetHeight() / 2) + 10
+
+    if quadTable[q] then
+        -- Round corner
+        x = x * w
+        y = y * h
+    else
+        -- Square corner (diagonal positioning)
+        local diagRadiusW = math.sqrt(2*(w)^2) - 10
+        local diagRadiusH = math.sqrt(2*(h)^2) - 10
+        x = math.max(-w, math.min(x * diagRadiusW, w))
+        y = math.max(-h, math.min(y * diagRadiusH, h))
+    end
+
+    button:SetPoint("CENTER", Minimap, "CENTER", x, y)
 end
 
 local function CreateMinimapIcon()
     local btn = CreateFrame("Button", "ParchmentReaderMinimapBtn", Minimap)
-    btn:SetSize(32, 32)
+
+    -- Frame strata settings
     btn:SetFrameStrata("MEDIUM")
+    btn:SetFixedFrameStrata(true)
     btn:SetFrameLevel(8)
+    btn:SetFixedFrameLevel(true)
+    btn:SetSize(31, 31)
+
     btn:RegisterForClicks("anyUp")
     btn:RegisterForDrag("LeftButton")
-    btn:SetClampedToScreen(true)
 
-    -- Icon (book texture)
-    local icon = btn:CreateTexture(nil, "BACKGROUND")
-    icon:SetSize(20, 20)
-    icon:SetPoint("CENTER", btn, "CENTER", 0, 0)
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+    -- Highlight texture
+    btn:SetHighlightTexture(136477)
 
     -- Border ring overlay
-    local ring = btn:CreateTexture(nil, "OVERLAY")
-    ring:SetSize(53, 53)
-    ring:SetTexture(136430)
-    ring:SetPoint("CENTER", btn, "CENTER", 0, 0)
+    local overlay = btn:CreateTexture(nil, "OVERLAY")
+    overlay:SetSize(53, 53)
+    overlay:SetTexture(136430)
+    overlay:SetPoint("TOPLEFT")
 
-    -- Hover highlight
-    local hi = btn:CreateTexture(nil, "HIGHLIGHT")
-    hi:SetAllPoints(icon)
-    hi:SetColorTexture(1, 1, 1, 0.3)
-    hi:Hide()
+    -- Background (dark circle inside ring)
+    local background = btn:CreateTexture(nil, "BACKGROUND")
+    background:SetSize(20, 20)
+    background:SetTexture(136467)
+    background:SetPoint("TOPLEFT", 7, -5)
 
+    -- Book icon
+    local icon = btn:CreateTexture(nil, "ARTWORK")
+    icon:SetSize(17, 17)
+    icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+    icon:SetPoint("TOPLEFT", 7, -6)
+
+    -- Tooltip
     btn:SetScript("OnEnter", function(self)
-        hi:Show()
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:AddLine("|cFFFFCC00Parchment Reader|r")
         GameTooltip:AddLine("|cFF00FFFFLeft-click|r – open reader", 1,1,1)
@@ -151,7 +200,6 @@ local function CreateMinimapIcon()
         GameTooltip:Show()
     end)
     btn:SetScript("OnLeave", function(self)
-        hi:Hide()
         GameTooltip:Hide()
     end)
 
@@ -163,26 +211,29 @@ local function CreateMinimapIcon()
         end
     end)
 
-    -- ── drag around minimap edge ──
+    -- Drag functionality
     btn:SetScript("OnDragStart", function(self)
         self:LockHighlight()
         self:SetScript("OnUpdate", function(self)
             local mx, my = Minimap:GetCenter()
-            local cx, cy = GetCursorPosition()
-            local s      = Minimap:GetEffectiveScale()
-            cx, cy = cx / s, cy / s
+            local px, py = GetCursorPosition()
+            local scale = Minimap:GetEffectiveScale()
+            px = px / scale
+            py = py / scale
 
-            local angle = math.atan2(cy - my, cx - mx)
-            ParchmentReaderDB.minimapAngle = math.deg(angle)
-            PositionIcon(self)
+            local angle = math.deg(math.atan2(py - my, px - mx)) % 360
+            ParchmentReaderDB.minimapAngle = angle
+
+            UpdateButtonPosition(self)
         end)
     end)
+
     btn:SetScript("OnDragStop", function(self)
         self:UnlockHighlight()
         self:SetScript("OnUpdate", nil)
     end)
 
-    PositionIcon(btn)
+    UpdateButtonPosition(btn)
     return btn
 end
 
