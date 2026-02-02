@@ -6,8 +6,8 @@ local function trim(s)
     return s:match("^%s*(.-)%s*$")
 end
 
-function BookReader:CreateBookEditorFrame()
-    local frame = CreateFrame("Frame", "BookReaderEditorFrame", UIParent, "BasicFrameTemplateWithInset")
+function ParchmentReader:CreateBookEditorFrame()
+    local frame = CreateFrame("Frame", "ParchmentReaderEditorFrame", UIParent, "BasicFrameTemplateWithInset")
     frame:SetSize(500, 450)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
@@ -65,7 +65,7 @@ function BookReader:CreateBookEditorFrame()
     saveBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 20, 15)
     saveBtn:SetText("Save Book")
     saveBtn:SetScript("OnClick", function()
-        BookReader:SaveBook()
+        ParchmentReader:SaveBook()
     end)
     
     -- Delete button (only shown when editing existing book)
@@ -74,7 +74,7 @@ function BookReader:CreateBookEditorFrame()
     deleteBtn:SetPoint("LEFT", saveBtn, "RIGHT", 10, 0)
     deleteBtn:SetText("Delete")
     deleteBtn:SetScript("OnClick", function()
-        BookReader:DeleteBook()
+        ParchmentReader:DeleteBook()
     end)
     frame.deleteBtn = deleteBtn
     
@@ -91,12 +91,12 @@ function BookReader:CreateBookEditorFrame()
     return frame
 end
 
-function BookReader:ShowBookEditor(bookName)
-    if not BookReaderEditorFrame then
+function ParchmentReader:ShowBookEditor(bookName)
+    if not ParchmentReaderEditorFrame then
         self:CreateBookEditorFrame()
     end
     
-    local frame = BookReaderEditorFrame
+    local frame = ParchmentReaderEditorFrame
     frame.editingBook = bookName
     
     if bookName then
@@ -123,24 +123,24 @@ function BookReader:ShowBookEditor(bookName)
     frame:Show()
 end
 
-function BookReader:SaveBook()
-    local frame = BookReaderEditorFrame
+function ParchmentReader:SaveBook()
+    local frame = ParchmentReaderEditorFrame
     local title = frame.titleInput:GetText()
     local content = frame.contentInput:GetText()
     
     if not title or trim(title) == "" then
-        print("|cFF33FF99BookReader:|r Please enter a book title.")
+        print("|cFF33FF99ParchmentReader:|r Please enter a book title.")
         return
     end
     
     if not content or trim(content) == "" then
-        print("|cFF33FF99BookReader:|r Please enter some content.")
+        print("|cFF33FF99ParchmentReader:|r Please enter some content.")
         return
     end
     
-    -- Save to BookReaderDB
-    BookReaderDB.customBooks = BookReaderDB.customBooks or {}
-    BookReaderDB.customBooks[title] = content
+    -- Save to ParchmentReaderDB
+    ParchmentReaderDB.customBooks = ParchmentReaderDB.customBooks or {}
+    ParchmentReaderDB.customBooks[title] = content
     
     -- Register the book in memory
     local lines = {}
@@ -148,7 +148,7 @@ function BookReader:SaveBook()
         table.insert(lines, line)
     end
     
-    local pageSize = BookReaderDB.pageSize or 25
+    local pageSize = ParchmentReaderDB.pageSize or 25
     local totalPages = math.ceil(#lines / pageSize)
     if totalPages < 1 then totalPages = 1 end
     
@@ -159,16 +159,16 @@ function BookReader:SaveBook()
         custom = true,  -- mark as user-created
     }
     
-    print("|cFF33FF99BookReader:|r Book '" .. title .. "' saved!")
+    print("|cFF33FF99ParchmentReader:|r Book '" .. title .. "' saved!")
     frame:Hide()
     
     -- Refresh the book list sidebar
-    if BookReaderFrame then
-        BookReader:RefreshBookList()
+    if ParchmentReaderFrame then
+        ParchmentReader:RefreshBookList()
     end
     
     -- Refresh reader if it's open
-    if BookReaderFrame and BookReaderFrame:IsShown() then
+    if ParchmentReaderFrame and ParchmentReaderFrame:IsShown() then
         -- If we were editing the current book, reload it
         if self.currentBook == title then
             self:UpdateReader()
@@ -176,42 +176,42 @@ function BookReader:SaveBook()
     end
 end
 
-function BookReader:DeleteBook()
-    local frame = BookReaderEditorFrame
+function ParchmentReader:DeleteBook()
+    local frame = ParchmentReaderEditorFrame
     local bookName = frame.editingBook
     
     if not bookName then return end
     
     -- Show confirmation
-    StaticPopupDialogs["BOOKREADER_DELETE"] = {
+    StaticPopupDialogs["PARCHMENTREADER_DELETE"] = {
         text = "Delete book '" .. bookName .. "'?",
         button1 = "Delete",
         button2 = "Cancel",
         OnAccept = function()
             -- Remove from saved data
-            if BookReaderDB.customBooks then
-                BookReaderDB.customBooks[bookName] = nil
+            if ParchmentReaderDB.customBooks then
+                ParchmentReaderDB.customBooks[bookName] = nil
             end
             
             -- Remove from memory
-            BookReader.books[bookName] = nil
+            ParchmentReader.books[bookName] = nil
             
             -- If this was the current book, clear it
-            if BookReader.currentBook == bookName then
-                BookReader.currentBook = nil
-                BookReader.currentPage = 1
-                if BookReaderFrame then
-                    BookReaderFrame.title:SetText("Parchment Reader")
-                    BookReader:UpdateReader()
+            if ParchmentReader.currentBook == bookName then
+                ParchmentReader.currentBook = nil
+                ParchmentReader.currentPage = 1
+                if ParchmentReaderFrame then
+                    ParchmentReaderFrame.title:SetText("Parchment Reader")
+                    ParchmentReader:UpdateReader()
                 end
             end
             
             -- Refresh the book list sidebar
-            if BookReaderFrame then
-                BookReader:RefreshBookList()
+            if ParchmentReaderFrame then
+                ParchmentReader:RefreshBookList()
             end
             
-            print("|cFF33FF99BookReader:|r Book '" .. bookName .. "' deleted.")
+            print("|cFF33FF99ParchmentReader:|r Book '" .. bookName .. "' deleted.")
             frame:Hide()
         end,
         timeout = 0,
@@ -219,5 +219,5 @@ function BookReader:DeleteBook()
         hideOnEscape = true,
     }
     
-    StaticPopup_Show("BOOKREADER_DELETE")
+    StaticPopup_Show("PARCHMENTREADER_DELETE")
 end

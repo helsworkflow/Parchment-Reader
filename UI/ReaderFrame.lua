@@ -1,8 +1,8 @@
 -- ReaderFrame.lua
 -- Parchment-style reader with sidebar book list on the left.
 
-function BookReader:CreateReaderFrame()
-    local frame = CreateFrame("Frame", "BookReaderFrame", UIParent, "BasicFrameTemplateWithInset")
+function ParchmentReader:CreateReaderFrame()
+    local frame = CreateFrame("Frame", "ParchmentReaderFrame", UIParent, "BasicFrameTemplateWithInset")
     frame:SetSize(self.db.profile.windowWidth, self.db.profile.windowHeight)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
@@ -48,7 +48,7 @@ function BookReader:CreateReaderFrame()
     addBookBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 42)
     addBookBtn:SetText("+ Add Book")
     addBookBtn:SetScript("OnClick", function()
-        BookReader:ShowBookEditor(nil)
+        ParchmentReader:ShowBookEditor(nil)
     end)
     frame.addBookBtn = addBookBtn
 
@@ -58,7 +58,7 @@ function BookReader:CreateReaderFrame()
     toggleBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 8)
     toggleBtn:SetText("Hide Books")
     toggleBtn:SetScript("OnClick", function()
-        BookReader:ToggleSidebar()
+        ParchmentReader:ToggleSidebar()
     end)
     frame.toggleBtn = toggleBtn
     
@@ -127,8 +127,8 @@ function BookReader:CreateReaderFrame()
     contentText:SetTextColor(0.1, 0.1, 0.1)
 
     -- Apply font settings
-    local fontName = BookReaderDB.fontName or "QuestFont"
-    local fontSize = BookReaderDB.fontSize or 14
+    local fontName = ParchmentReaderDB.fontName or "QuestFont"
+    local fontSize = ParchmentReaderDB.fontSize or 14
 
     if fontName:match("%.TTF$") then
         -- If it's a TTF file
@@ -163,14 +163,14 @@ function BookReader:CreateReaderFrame()
     prevBtn:SetSize(100, 22)
     prevBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 190, 10)
     prevBtn:SetText("< Previous")
-    prevBtn:SetScript("OnClick", function() BookReader:PrevPage() end)
+    prevBtn:SetScript("OnClick", function() ParchmentReader:PrevPage() end)
     frame.prevButton = prevBtn
     
     local nextBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     nextBtn:SetSize(100, 22)
     nextBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
     nextBtn:SetText("Next >")
-    nextBtn:SetScript("OnClick", function() BookReader:NextPage() end)
+    nextBtn:SetScript("OnClick", function() ParchmentReader:NextPage() end)
     frame.nextButton = nextBtn
     
     -- ═══════════════════════════════════════════════════════════════════════
@@ -181,7 +181,7 @@ function BookReader:CreateReaderFrame()
     self:RefreshBookList()
 
     -- Apply saved sidebar state
-    if BookReaderDB.sidebarCollapsed then
+    if ParchmentReaderDB.sidebarCollapsed then
         self:ToggleSidebar()
     end
 
@@ -190,17 +190,17 @@ function BookReader:CreateReaderFrame()
 end
 
 -- Refresh the book list (call after adding/deleting books)
-function BookReader:RefreshBookList()
-    if not BookReaderFrame then return end
+function ParchmentReader:RefreshBookList()
+    if not ParchmentReaderFrame then return end
     
-    local scrollChild = BookReaderFrame.bookListScroll
+    local scrollChild = ParchmentReaderFrame.bookListScroll
     
     -- Clear existing buttons
-    for _, btn in pairs(BookReaderFrame.bookButtons) do
+    for _, btn in pairs(ParchmentReaderFrame.bookButtons) do
         btn:Hide()
         btn:SetParent(nil)
     end
-    BookReaderFrame.bookButtons = {}
+    ParchmentReaderFrame.bookButtons = {}
     
     -- Create buttons for all books
     local yOffset = 0
@@ -243,11 +243,11 @@ function BookReader:RefreshBookList()
         -- Click to read
         btn:SetScript("OnClick", function(self, mouseBtn)
             if mouseBtn == "LeftButton" then
-                BookReader:LoadBook(bookName)
-                BookReader:RefreshBookList()  -- refresh to show selection
+                ParchmentReader:LoadBook(bookName)
+                ParchmentReader:RefreshBookList()  -- refresh to show selection
             elseif mouseBtn == "RightButton" and bookData.custom then
                 -- Right-click to edit (only for custom books)
-                BookReader:ShowBookEditor(bookName)
+                ParchmentReader:ShowBookEditor(bookName)
             end
         end)
         
@@ -265,11 +265,11 @@ function BookReader:RefreshBookList()
         end)
         
         -- Highlight if this is the current book
-        if BookReader.currentBook == bookName then
+        if ParchmentReader.currentBook == bookName then
             bg:SetColorTexture(0.2, 0.5, 0.8, 0.3)
         end
         
-        BookReaderFrame.bookButtons[index] = btn
+        ParchmentReaderFrame.bookButtons[index] = btn
         index = index + 1
         yOffset = yOffset + buttonHeight
     end

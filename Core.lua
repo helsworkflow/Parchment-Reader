@@ -1,12 +1,12 @@
--- BookReader – Core.lua
+-- ParchmentReader – Core.lua
 -- No external library dependencies at all.
--- Persistence: plain SavedVariables table "BookReaderDB", merged with
+-- Persistence: plain SavedVariables table "ParchmentReaderDB", merged with
 -- defaults on load.  WoW serialises it automatically.
 
-BookReader = {}
-BookReader.books       = {}
-BookReader.currentBook = nil
-BookReader.currentPage = 1
+ParchmentReader = {}
+ParchmentReader.books       = {}
+ParchmentReader.currentBook = nil
+ParchmentReader.currentPage = 1
 
 -- ── defaults ──────────────────────────────────────────────────────────────
 local DEFAULTS = {
@@ -27,26 +27,26 @@ end
 
 -- SavedVariables are already populated by WoW before any addon Lua runs.
 -- Init here so that BookList.lua (which executes right after this file)
--- can safely read BookReaderDB.pageSize.
-BookReaderDB = BookReaderDB or {}
-ApplyDefaults(BookReaderDB)
-BookReader.db = { profile = BookReaderDB }
+-- can safely read ParchmentReaderDB.pageSize.
+ParchmentReaderDB = ParchmentReaderDB or {}
+ApplyDefaults(ParchmentReaderDB)
+ParchmentReader.db = { profile = ParchmentReaderDB }
 
 -- Load custom books from saved data
 local function LoadCustomBooks()
-    if not BookReaderDB.customBooks then return end
+    if not ParchmentReaderDB.customBooks then return end
     
-    for title, content in pairs(BookReaderDB.customBooks) do
+    for title, content in pairs(ParchmentReaderDB.customBooks) do
         local lines = {}
         for line in content:gmatch("([^\n]*)\n?") do
             table.insert(lines, line)
         end
         
-        local pageSize = BookReaderDB.pageSize or 25
+        local pageSize = ParchmentReaderDB.pageSize or 25
         local totalPages = math.ceil(#lines / pageSize)
         if totalPages < 1 then totalPages = 1 end
         
-        BookReader.books[title] = {
+        ParchmentReader.books[title] = {
             title = title,
             lines = lines,
             totalPages = totalPages,
@@ -59,7 +59,7 @@ LoadCustomBooks()
 
 -- ── minimap icon ──────────────────────────────────────────────────────────
 local function PositionIcon(btn)
-    local angle  = math.rad(BookReaderDB.minimapAngle or 315)
+    local angle  = math.rad(ParchmentReaderDB.minimapAngle or 315)
     local radius = 80
     btn:ClearAllPoints()
     btn:SetPoint("CENTER", Minimap, "CENTER",
@@ -68,7 +68,7 @@ local function PositionIcon(btn)
 end
 
 local function CreateMinimapIcon()
-    local btn = CreateFrame("Button", "BookReaderMinimapBtn", Minimap)
+    local btn = CreateFrame("Button", "ParchmentReaderMinimapBtn", Minimap)
     btn:SetSize(32, 32)
     btn:SetFrameStrata("MEDIUM")
     btn:SetFrameLevel(8)
@@ -109,9 +109,9 @@ local function CreateMinimapIcon()
 
     btn:SetScript("OnClick", function(self, mouseButton)
         if mouseButton == "LeftButton" then
-            BookReader:ToggleReader()
+            ParchmentReader:ToggleReader()
         elseif mouseButton == "RightButton" then
-            BookReader:ToggleSettings()
+            ParchmentReader:ToggleSettings()
         end
     end)
 
@@ -125,7 +125,7 @@ local function CreateMinimapIcon()
             cx, cy = cx / s, cy / s
 
             local angle = math.atan2(cy - my, cx - mx)
-            BookReaderDB.minimapAngle = math.deg(angle)
+            ParchmentReaderDB.minimapAngle = math.deg(angle)
             PositionIcon(self)
         end)
     end)
@@ -139,40 +139,40 @@ local function CreateMinimapIcon()
 end
 
 -- ── toggle reader / settings ──────────────────────────────────────────────
-function BookReader:ToggleReader()
-    if BookReaderFrame and BookReaderFrame:IsShown() then
-        BookReaderFrame:Hide()
+function ParchmentReader:ToggleReader()
+    if ParchmentReaderFrame and ParchmentReaderFrame:IsShown() then
+        ParchmentReaderFrame:Hide()
     else
-        if not BookReaderFrame then
+        if not ParchmentReaderFrame then
             self:CreateReaderFrame()
         end
-        BookReaderFrame:Show()
+        ParchmentReaderFrame:Show()
         self:UpdateReader()
     end
 end
 
-function BookReader:ToggleSettings()
-    if BookReaderSettingsFrame and BookReaderSettingsFrame:IsShown() then
-        BookReaderSettingsFrame:Hide()
+function ParchmentReader:ToggleSettings()
+    if ParchmentReaderSettingsFrame and ParchmentReaderSettingsFrame:IsShown() then
+        ParchmentReaderSettingsFrame:Hide()
     else
-        if not BookReaderSettingsFrame then
+        if not ParchmentReaderSettingsFrame then
             self:CreateSettingsFrame()
         end
-        BookReaderSettingsFrame:Show()
+        ParchmentReaderSettingsFrame:Show()
     end
 end
 
-function BookReader:ToggleSidebar()
-    if not BookReaderFrame then return end
+function ParchmentReader:ToggleSidebar()
+    if not ParchmentReaderFrame then return end
 
-    BookReaderDB.sidebarCollapsed = not BookReaderDB.sidebarCollapsed
+    ParchmentReaderDB.sidebarCollapsed = not ParchmentReaderDB.sidebarCollapsed
 
-    local frame = BookReaderFrame
+    local frame = ParchmentReaderFrame
     local sidebar = frame.sidebar
     local parchment = frame.parchment
     local toggleBtn = frame.toggleBtn
 
-    if BookReaderDB.sidebarCollapsed then
+    if ParchmentReaderDB.sidebarCollapsed then
         -- Collapse: hide sidebar completely
         sidebar:Hide()
 
@@ -204,29 +204,29 @@ function BookReader:ToggleSidebar()
 end
 
 -- ── book management ───────────────────────────────────────────────────────
-function BookReader:LoadBook(bookName)
+function ParchmentReader:LoadBook(bookName)
     if not self.books[bookName] then
-        print("|cFF33FF99BookReader:|r Book not found: " .. bookName)
+        print("|cFF33FF99ParchmentReader:|r Book not found: " .. bookName)
         return false
     end
 
     self.currentBook = bookName
     self.currentPage = 1
 
-    if BookReaderFrame and BookReaderFrame.title then
-        BookReaderFrame.title:SetText(bookName)
+    if ParchmentReaderFrame and ParchmentReaderFrame.title then
+        ParchmentReaderFrame.title:SetText(bookName)
     end
 
     self:UpdateReader()
     
-    if BookReaderFrame then
+    if ParchmentReaderFrame then
         self:RefreshBookList()
     end
     
     return true
 end
 
-function BookReader:NextPage()
+function ParchmentReader:NextPage()
     if not self.currentBook then return end
     local book = self.books[self.currentBook]
     if self.currentPage < book.totalPages then
@@ -235,7 +235,7 @@ function BookReader:NextPage()
     end
 end
 
-function BookReader:PrevPage()
+function ParchmentReader:PrevPage()
     if not self.currentBook then return end
     if self.currentPage > 1 then
         self.currentPage = self.currentPage - 1
@@ -244,19 +244,19 @@ function BookReader:PrevPage()
 end
 
 -- ── render current page ───────────────────────────────────────────────────
-function BookReader:UpdateReader()
-    if not BookReaderFrame then return end
+function ParchmentReader:UpdateReader()
+    if not ParchmentReaderFrame then return end
 
     if not self.currentBook or not self.books[self.currentBook] then
-        BookReaderFrame.contentText:SetText("Select a book from the list on the left.")
-        BookReaderFrame.pageText:SetText("")
-        BookReaderFrame.prevButton:Disable()
-        BookReaderFrame.nextButton:Disable()
+        ParchmentReaderFrame.contentText:SetText("Select a book from the list on the left.")
+        ParchmentReaderFrame.pageText:SetText("")
+        ParchmentReaderFrame.prevButton:Disable()
+        ParchmentReaderFrame.nextButton:Disable()
         return
     end
 
     local book      = self.books[self.currentBook]
-    local pageSize  = BookReaderDB.pageSize
+    local pageSize  = ParchmentReaderDB.pageSize
     local startLine = (self.currentPage - 1) * pageSize + 1
     local endLine   = math.min(startLine + pageSize - 1, #book.lines)
 
@@ -265,30 +265,30 @@ function BookReader:UpdateReader()
         table.insert(pageLines, book.lines[i])
     end
 
-    BookReaderFrame.contentText:SetText(table.concat(pageLines, "\n"))
-    BookReaderFrame.pageText:SetText(
+    ParchmentReaderFrame.contentText:SetText(table.concat(pageLines, "\n"))
+    ParchmentReaderFrame.pageText:SetText(
         string.format("Page %d / %d", self.currentPage, book.totalPages))
 
     if self.currentPage > 1 then
-        BookReaderFrame.prevButton:Enable()
+        ParchmentReaderFrame.prevButton:Enable()
     else
-        BookReaderFrame.prevButton:Disable()
+        ParchmentReaderFrame.prevButton:Disable()
     end
     
     if self.currentPage < book.totalPages then
-        BookReaderFrame.nextButton:Enable()
+        ParchmentReaderFrame.nextButton:Enable()
     else
-        BookReaderFrame.nextButton:Disable()
+        ParchmentReaderFrame.nextButton:Disable()
     end
 end
 
 -- ── update font ────────────────────────────────────────────────────────────
-function BookReader:UpdateFont()
-    if not BookReaderFrame or not BookReaderFrame.contentText then return end
+function ParchmentReader:UpdateFont()
+    if not ParchmentReaderFrame or not ParchmentReaderFrame.contentText then return end
 
-    local contentText = BookReaderFrame.contentText
-    local fontName = BookReaderDB.fontName or "QuestFont"
-    local fontSize = BookReaderDB.fontSize or 14
+    local contentText = ParchmentReaderFrame.contentText
+    local fontName = ParchmentReaderDB.fontName or "QuestFont"
+    local fontSize = ParchmentReaderDB.fontSize or 14
 
     if fontName:match("%.TTF$") then
         -- If it's a TTF file
@@ -315,14 +315,14 @@ _boot:RegisterEvent("PLAYER_ENTERING_WORLD")
 _boot:SetScript("OnEvent", function(self, event, addonName)
 
     if event == "PLAYER_ENTERING_WORLD" then
-        if not BookReader.minimapBtn then
-            BookReader.minimapBtn = CreateMinimapIcon()
+        if not ParchmentReader.minimapBtn then
+            ParchmentReader.minimapBtn = CreateMinimapIcon()
         end
 
-        if BookReaderDB.hide then
-            BookReader.minimapBtn:Hide()
+        if ParchmentReaderDB.hide then
+            ParchmentReader.minimapBtn:Hide()
         else
-            BookReader.minimapBtn:Show()
+            ParchmentReader.minimapBtn:Show()
         end
         
         print("|cFF33FF99Parchment Reader|r loaded – click the minimap icon to start reading.")
@@ -330,20 +330,20 @@ _boot:SetScript("OnEvent", function(self, event, addonName)
 end)
 
 -- ── slash commands ────────────────────────────────────────────────────────
-SLASH_BOOKREADER1 = "/br"
-SLASH_BOOKREADER2 = "/bookreader"
-SlashCmdList["BOOKREADER"] = function(msg)
+SLASH_PARCHMENTREADER1 = "/pr"
+SLASH_PARCHMENTREADER2 = "/parchmentreader"
+SlashCmdList["PARCHMENTREADER"] = function(msg)
     msg = strtrim(msg):lower()
 
     if msg == "reload" or msg == "reset" then
         -- Recreate the reader frame to apply UI changes
-        if BookReaderFrame then
-            BookReaderFrame:Hide()
-            BookReaderFrame = nil
+        if ParchmentReaderFrame then
+            ParchmentReaderFrame:Hide()
+            ParchmentReaderFrame = nil
         end
-        print("|cFF33FF99BookReader:|r Frame reset. Open the reader again to see changes.")
+        print("|cFF33FF99ParchmentReader:|r Frame reset. Open the reader again to see changes.")
     else
         -- Default: toggle the reader
-        BookReader:ToggleReader()
+        ParchmentReader:ToggleReader()
     end
 end

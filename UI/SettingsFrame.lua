@@ -1,7 +1,7 @@
 -- SettingsFrame.lua - Settings interface
 
-function BookReader:CreateSettingsFrame()
-    local frame = CreateFrame("Frame", "BookReaderSettingsFrame", UIParent, "BasicFrameTemplateWithInset")
+function ParchmentReader:CreateSettingsFrame()
+    local frame = CreateFrame("Frame", "ParchmentReaderSettingsFrame", UIParent, "BasicFrameTemplateWithInset")
     frame:SetSize(400, 500)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
@@ -13,7 +13,7 @@ function BookReader:CreateSettingsFrame()
     
     frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     frame.title:SetPoint("TOP", frame.TitleBg, 0, -3)
-    frame.title:SetText("BookReader Settings")
+    frame.title:SetText("ParchmentReader Settings")
     
     local yOffset = -40
     local spacing = 40
@@ -23,7 +23,7 @@ function BookReader:CreateSettingsFrame()
     pageSizeText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
     pageSizeText:SetText("Lines per page:")
     
-    local pageSizeSlider = CreateFrame("Slider", "BookReaderPageSizeSlider", frame, "OptionsSliderTemplate")
+    local pageSizeSlider = CreateFrame("Slider", "ParchmentReaderPageSizeSlider", frame, "OptionsSliderTemplate")
     pageSizeSlider:SetPoint("TOPLEFT", pageSizeText, "BOTTOMLEFT", 0, -10)
     pageSizeSlider:SetMinMaxValues(10, 50)
     pageSizeSlider:SetValue(self.db.profile.pageSize)
@@ -38,23 +38,23 @@ function BookReader:CreateSettingsFrame()
     pageSizeSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        BookReader.db.profile.pageSize = value
+        ParchmentReader.db.profile.pageSize = value
         
         -- Recalculate all books' page counts
-        for bookName, book in pairs(BookReader.books) do
+        for bookName, book in pairs(ParchmentReader.books) do
             book.totalPages = math.ceil(#book.lines / value)
         end
         
         -- Update reader if open
-        if BookReaderFrame and BookReaderFrame:IsShown() then
+        if ParchmentReaderFrame and ParchmentReaderFrame:IsShown() then
             -- Adjust current page if needed
-            if BookReader.currentBook then
-                local totalPages = BookReader.books[BookReader.currentBook].totalPages
-                if BookReader.currentPage > totalPages then
-                    BookReader.currentPage = totalPages
+            if ParchmentReader.currentBook then
+                local totalPages = ParchmentReader.books[ParchmentReader.currentBook].totalPages
+                if ParchmentReader.currentPage > totalPages then
+                    ParchmentReader.currentPage = totalPages
                 end
             end
-            BookReader:UpdateReader()
+            ParchmentReader:UpdateReader()
         end
     end)
     
@@ -65,7 +65,7 @@ function BookReader:CreateSettingsFrame()
     widthText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
     widthText:SetText("Window width:")
     
-    local widthSlider = CreateFrame("Slider", "BookReaderWidthSlider", frame, "OptionsSliderTemplate")
+    local widthSlider = CreateFrame("Slider", "ParchmentReaderWidthSlider", frame, "OptionsSliderTemplate")
     widthSlider:SetPoint("TOPLEFT", widthText, "BOTTOMLEFT", 0, -10)
     widthSlider:SetMinMaxValues(400, 1000)
     widthSlider:SetValue(self.db.profile.windowWidth)
@@ -80,10 +80,10 @@ function BookReader:CreateSettingsFrame()
     widthSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        BookReader.db.profile.windowWidth = value
+        ParchmentReader.db.profile.windowWidth = value
         
-        if BookReaderFrame then
-            BookReaderFrame:SetWidth(value)
+        if ParchmentReaderFrame then
+            ParchmentReaderFrame:SetWidth(value)
         end
     end)
     
@@ -94,7 +94,7 @@ function BookReader:CreateSettingsFrame()
     heightText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
     heightText:SetText("Window height:")
     
-    local heightSlider = CreateFrame("Slider", "BookReaderHeightSlider", frame, "OptionsSliderTemplate")
+    local heightSlider = CreateFrame("Slider", "ParchmentReaderHeightSlider", frame, "OptionsSliderTemplate")
     heightSlider:SetPoint("TOPLEFT", heightText, "BOTTOMLEFT", 0, -10)
     heightSlider:SetMinMaxValues(300, 800)
     heightSlider:SetValue(self.db.profile.windowHeight)
@@ -109,10 +109,10 @@ function BookReader:CreateSettingsFrame()
     heightSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        BookReader.db.profile.windowHeight = value
+        ParchmentReader.db.profile.windowHeight = value
         
-        if BookReaderFrame then
-            BookReaderFrame:SetHeight(value)
+        if ParchmentReaderFrame then
+            ParchmentReaderFrame:SetHeight(value)
         end
     end)
     
@@ -123,7 +123,7 @@ function BookReader:CreateSettingsFrame()
     fontText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
     fontText:SetText("Font:")
 
-    local fontDropdown = CreateFrame("Frame", "BookReaderFontDropdown", frame, "UIDropDownMenuTemplate")
+    local fontDropdown = CreateFrame("Frame", "ParchmentReaderFontDropdown", frame, "UIDropDownMenuTemplate")
     fontDropdown:SetPoint("TOPLEFT", fontText, "BOTTOMLEFT", -15, -5)
 
     UIDropDownMenu_Initialize(fontDropdown, function(self, level)
@@ -142,17 +142,17 @@ function BookReader:CreateSettingsFrame()
             info.text = font.display
             info.value = font.name
             info.func = function()
-                BookReaderDB.fontName = font.name
+                ParchmentReaderDB.fontName = font.name
                 UIDropDownMenu_SetSelectedValue(fontDropdown, font.name)
-                BookReader:UpdateFont()
+                ParchmentReader:UpdateFont()
             end
-            info.checked = (BookReaderDB.fontName == font.name)
+            info.checked = (ParchmentReaderDB.fontName == font.name)
             UIDropDownMenu_AddButton(info)
         end
     end)
 
     UIDropDownMenu_SetWidth(fontDropdown, 150)
-    UIDropDownMenu_SetSelectedValue(fontDropdown, BookReaderDB.fontName or "QuestFont")
+    UIDropDownMenu_SetSelectedValue(fontDropdown, ParchmentReaderDB.fontName or "QuestFont")
 
     yOffset = yOffset - 60
 
@@ -161,42 +161,42 @@ function BookReader:CreateSettingsFrame()
     fontSizeText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
     fontSizeText:SetText("Font size:")
 
-    local fontSizeSlider = CreateFrame("Slider", "BookReaderFontSizeSlider", frame, "OptionsSliderTemplate")
+    local fontSizeSlider = CreateFrame("Slider", "ParchmentReaderFontSizeSlider", frame, "OptionsSliderTemplate")
     fontSizeSlider:SetPoint("TOPLEFT", fontSizeText, "BOTTOMLEFT", 0, -10)
     fontSizeSlider:SetMinMaxValues(8, 24)
-    fontSizeSlider:SetValue(BookReaderDB.fontSize or 14)
+    fontSizeSlider:SetValue(ParchmentReaderDB.fontSize or 14)
     fontSizeSlider:SetValueStep(1)
     fontSizeSlider:SetObeyStepOnDrag(true)
     fontSizeSlider:SetWidth(300)
 
     _G[fontSizeSlider:GetName().."Low"]:SetText("8")
     _G[fontSizeSlider:GetName().."High"]:SetText("24")
-    _G[fontSizeSlider:GetName().."Text"]:SetText(BookReaderDB.fontSize or 14)
+    _G[fontSizeSlider:GetName().."Text"]:SetText(ParchmentReaderDB.fontSize or 14)
 
     fontSizeSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        BookReaderDB.fontSize = value
-        BookReader:UpdateFont()
+        ParchmentReaderDB.fontSize = value
+        ParchmentReader:UpdateFont()
     end)
 
     yOffset = yOffset - spacing - 30
 
     -- Minimap Button Toggle
-    local minimapCheck = CreateFrame("CheckButton", "BookReaderMinimapCheck", frame, "InterfaceOptionsCheckButtonTemplate")
+    local minimapCheck = CreateFrame("CheckButton", "ParchmentReaderMinimapCheck", frame, "InterfaceOptionsCheckButtonTemplate")
     minimapCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
     _G[minimapCheck:GetName().."Text"]:SetText("Show minimap button")
-    minimapCheck:SetChecked(not BookReaderDB.hide)
+    minimapCheck:SetChecked(not ParchmentReaderDB.hide)
     
     minimapCheck:SetScript("OnClick", function(self)
         local checked = self:GetChecked()
-        BookReaderDB.hide = not checked
+        ParchmentReaderDB.hide = not checked
 
-        if BookReader.minimapBtn then
+        if ParchmentReader.minimapBtn then
             if checked then
-                BookReader.minimapBtn:Show()
+                ParchmentReader.minimapBtn:Show()
             else
-                BookReader.minimapBtn:Hide()
+                ParchmentReader.minimapBtn:Hide()
             end
         end
     end)

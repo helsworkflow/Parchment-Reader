@@ -3,7 +3,7 @@
 ## Notes: Simple book reader addon for reading text files in-game
 ## Author: Yaroslav Skvortsov
 ## Version: 1.0.0
-## SavedVariables: BookReaderDB
+## SavedVariables: ParchmentReaderDB
 
 Core.lua
 Books\BookList.lua

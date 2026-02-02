@@ -1,7 +1,7 @@
 -- BookList.lua - Handles loading and managing books
 
 local function LoadBookFromFile(fileName, bookTitle)
-    local path = "Interface\\AddOns\\BookReader\\Books\\" .. fileName
+    local path = "Interface\\AddOns\\ParchmentReader\\Books\\" .. fileName
     local content = ""
     
     -- Try to load the file (this is a simplified version)
@@ -21,11 +21,11 @@ local function RegisterBook(bookName, bookContent)
 
     -- pageSize comes straight from the SavedVariables table;
     -- Core.lua guarantees it exists before any other file runs.
-    local pageSize  = BookReaderDB and BookReaderDB.pageSize or 25
+    local pageSize  = ParchmentReaderDB and ParchmentReaderDB.pageSize or 25
     local totalPages = math.ceil(#lines / pageSize)
     if totalPages < 1 then totalPages = 1 end
 
-    BookReader.books[bookName] = {
+    ParchmentReader.books[bookName] = {
         title      = bookName,
         lines      = lines,
         totalPages = totalPages,
@@ -34,9 +34,9 @@ end
 
 -- Example book content (you can add your own books here)
 local exampleBook1 = [[
-Welcome to BookReader!
+Welcome to ParchmentReader!
 
-This is an example book that demonstrates how the BookReader addon works.
+This is an example book that demonstrates how the ParchmentReader addon works.
 
 You can add your own books by editing the BookList.lua file and adding new book content.
 
@@ -125,5 +125,5 @@ local function InitializeBooks()
 end
 
 -- Called directly at load time.  Core.lua is listed before this file in the
--- TOC, so BookReader and BookReaderDB are already initialised.
+-- TOC, so ParchmentReader and ParchmentReaderDB are already initialised.
 InitializeBooks()
