@@ -111,8 +111,8 @@ function ParchmentReader:CreateReaderFrame()
 
     -- Content text (scrollable)
     local contentScroll = CreateFrame("ScrollFrame", nil, parchment, "UIPanelScrollFrameTemplate")
-    contentScroll:SetPoint("TOPLEFT", parchment, "TOPLEFT", 8, -8)
-    contentScroll:SetPoint("BOTTOMRIGHT", parchment, "BOTTOMRIGHT", -26, 32)
+    contentScroll:SetPoint("TOPLEFT", parchment, "TOPLEFT", 8, -4)
+    contentScroll:SetPoint("BOTTOMRIGHT", parchment, "BOTTOMRIGHT", -26, 4)
     
     local contentChild = CreateFrame("Frame", nil, contentScroll)
     contentChild:SetSize(contentScroll:GetWidth() - 10, 1)
@@ -147,31 +147,32 @@ function ParchmentReader:CreateReaderFrame()
 
     contentText:SetText("Select a book from the list on the left.")
     frame.contentText = contentText
-    
-    -- Page indicator
-    local pageText = parchment:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    pageText:SetPoint("BOTTOM", parchment, "BOTTOM", 0, 8)
-    pageText:SetTextColor(0.4, 0.35, 0.25)
-    pageText:SetText("")
-    frame.pageText = pageText
-    
+
     -- ═══════════════════════════════════════════════════════════════════════
     -- BOTTOM: Navigation buttons
     -- ═══════════════════════════════════════════════════════════════════════
-    
+
     local prevBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     prevBtn:SetSize(100, 22)
     prevBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 190, 10)
     prevBtn:SetText("< Previous")
     prevBtn:SetScript("OnClick", function() ParchmentReader:PrevPage() end)
     frame.prevButton = prevBtn
-    
+
     local nextBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     nextBtn:SetSize(100, 22)
     nextBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
     nextBtn:SetText("Next >")
     nextBtn:SetScript("OnClick", function() ParchmentReader:NextPage() end)
     frame.nextButton = nextBtn
+
+    -- Page indicator (centered between Previous and Next buttons)
+    local pageText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    pageText:SetPoint("LEFT", prevBtn, "RIGHT", 10, 1)
+    pageText:SetPoint("RIGHT", nextBtn, "LEFT", -10, 1)
+    pageText:SetJustifyH("CENTER")
+    pageText:SetText("")
+    frame.pageText = pageText
     
     -- ═══════════════════════════════════════════════════════════════════════
     -- Populate book list
