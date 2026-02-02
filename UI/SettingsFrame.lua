@@ -2,7 +2,7 @@
 
 function ParchmentReader:CreateSettingsFrame()
     local frame = CreateFrame("Frame", "ParchmentReaderSettingsFrame", UIParent, "BasicFrameTemplateWithInset")
-    frame:SetSize(400, 500)
+    frame:SetSize(360, 500)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
     frame:EnableMouse(true)
@@ -201,10 +201,75 @@ function ParchmentReader:CreateSettingsFrame()
         end
     end)
     
+    -- Reset to Default button
+    local resetButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    resetButton:SetSize(120, 22)
+    resetButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 20, 10)
+    resetButton:SetText("Reset to Default")
+    resetButton:SetScript("OnClick", function()
+        -- Show confirmation dialog
+        StaticPopupDialogs["PARCHMENTREADER_RESET"] = {
+            text = "Reset all settings to defaults?",
+            button1 = "Yes",
+            button2 = "No",
+            OnAccept = function()
+                -- Reset all settings to defaults
+                ParchmentReaderDB.pageSize = 25
+                ParchmentReaderDB.windowWidth = 600
+                ParchmentReaderDB.windowHeight = 450
+                ParchmentReaderDB.fontSize = 14
+                ParchmentReaderDB.fontName = "QuestFont"
+                ParchmentReaderDB.hide = false
+
+                -- Update UI
+                pageSizeSlider:SetValue(25)
+                widthSlider:SetValue(600)
+                heightSlider:SetValue(450)
+                fontSizeSlider:SetValue(14)
+                UIDropDownMenu_SetSelectedValue(fontDropdown, "QuestFont")
+                minimapCheck:SetChecked(true)
+
+                -- Apply changes
+                if ParchmentReaderFrame then
+                    ParchmentReaderFrame:SetWidth(600)
+                    ParchmentReaderFrame:SetHeight(450)
+                end
+
+                if ParchmentReader.minimapBtn then
+                    ParchmentReader.minimapBtn:Show()
+                end
+
+                ParchmentReader:UpdateFont()
+
+                -- Recalculate all books' page counts
+                for bookName, book in pairs(ParchmentReader.books) do
+                    book.totalPages = math.ceil(#book.lines / 25)
+                end
+
+                if ParchmentReaderFrame and ParchmentReaderFrame:IsShown() then
+                    if ParchmentReader.currentBook then
+                        local totalPages = ParchmentReader.books[ParchmentReader.currentBook].totalPages
+                        if ParchmentReader.currentPage > totalPages then
+                            ParchmentReader.currentPage = totalPages
+                        end
+                    end
+                    ParchmentReader:UpdateReader()
+                end
+
+                print("|cFF33FF99ParchmentReader:|r Settings reset to defaults.")
+            end,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+        }
+
+        StaticPopup_Show("PARCHMENTREADER_RESET")
+    end)
+
     -- Close button
     local closeButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
     closeButton:SetSize(100, 22)
-    closeButton:SetPoint("BOTTOM", frame, "BOTTOM", 0, 10)
+    closeButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 10)
     closeButton:SetText("Close")
     closeButton:SetScript("OnClick", function()
         frame:Hide()
