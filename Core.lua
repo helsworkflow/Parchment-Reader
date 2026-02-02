@@ -32,15 +32,50 @@ ParchmentReaderDB = ParchmentReaderDB or {}
 ApplyDefaults(ParchmentReaderDB)
 ParchmentReader.db = { profile = ParchmentReaderDB }
 
+-- Wrap long lines to a maximum width (characters per line)
+local function WrapText(text, maxWidth)
+    maxWidth = maxWidth or 100
+
+    local wrappedLines = {}
+
+    for line in text:gmatch("([^\n]*)\n?") do
+        if line == "" then
+            table.insert(wrappedLines, "")
+        elseif #line <= maxWidth then
+            table.insert(wrappedLines, line)
+        else
+            local remaining = line
+            while #remaining > maxWidth do
+                local splitPos = maxWidth
+                local lastSpace = remaining:sub(1, maxWidth):match("^.*()%s")
+
+                if lastSpace and lastSpace > maxWidth * 0.5 then
+                    splitPos = lastSpace - 1
+                else
+                    splitPos = maxWidth
+                end
+
+                local part = remaining:sub(1, splitPos)
+                table.insert(wrappedLines, part)
+                remaining = remaining:sub(splitPos + 1):match("^%s*(.*)$")
+            end
+
+            if #remaining > 0 then
+                table.insert(wrappedLines, remaining)
+            end
+        end
+    end
+
+    return wrappedLines
+end
+
 -- Load custom books from saved data
 local function LoadCustomBooks()
     if not ParchmentReaderDB.customBooks then return end
-    
+
     for title, content in pairs(ParchmentReaderDB.customBooks) do
-        local lines = {}
-        for line in content:gmatch("([^\n]*)\n?") do
-            table.insert(lines, line)
-        end
+        -- Wrap long lines automatically (max 100 chars per line)
+        local lines = WrapText(content, 100)
         
         local pageSize = ParchmentReaderDB.pageSize or 25
         local totalPages = math.ceil(#lines / pageSize)

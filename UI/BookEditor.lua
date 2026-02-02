@@ -6,6 +6,54 @@ local function trim(s)
     return s:match("^%s*(.-)%s*$")
 end
 
+-- Wrap long lines to a maximum width (characters per line)
+local function WrapText(text, maxWidth)
+    maxWidth = maxWidth or 100  -- default 100 characters per line
+
+    local wrappedLines = {}
+
+    -- Process each existing line separately (preserve paragraphs)
+    for line in text:gmatch("([^\n]*)\n?") do
+        if line == "" then
+            -- Empty line (paragraph break)
+            table.insert(wrappedLines, "")
+        elseif #line <= maxWidth then
+            -- Line is short enough
+            table.insert(wrappedLines, line)
+        else
+            -- Line is too long, need to wrap
+            local remaining = line
+            while #remaining > maxWidth do
+                -- Find last space before maxWidth
+                local splitPos = maxWidth
+                local lastSpace = remaining:sub(1, maxWidth):match("^.*()%s")
+
+                if lastSpace and lastSpace > maxWidth * 0.5 then
+                    -- Found a good breaking point
+                    splitPos = lastSpace - 1
+                else
+                    -- No space found, break at maxWidth
+                    splitPos = maxWidth
+                end
+
+                -- Extract the part and add to wrapped lines
+                local part = remaining:sub(1, splitPos)
+                table.insert(wrappedLines, part)
+
+                -- Remove leading space from remaining text
+                remaining = remaining:sub(splitPos + 1):match("^%s*(.*)$")
+            end
+
+            -- Add the remaining part
+            if #remaining > 0 then
+                table.insert(wrappedLines, remaining)
+            end
+        end
+    end
+
+    return wrappedLines
+end
+
 function ParchmentReader:CreateBookEditorFrame()
     local frame = CreateFrame("Frame", "ParchmentReaderEditorFrame", UIParent, "BasicFrameTemplateWithInset")
     frame:SetSize(500, 450)
@@ -141,12 +189,10 @@ function ParchmentReader:SaveBook()
     -- Save to ParchmentReaderDB
     ParchmentReaderDB.customBooks = ParchmentReaderDB.customBooks or {}
     ParchmentReaderDB.customBooks[title] = content
-    
+
     -- Register the book in memory
-    local lines = {}
-    for line in content:gmatch("([^\n]*)\n?") do
-        table.insert(lines, line)
-    end
+    -- Wrap long lines automatically (max 100 chars per line)
+    local lines = WrapText(content, 100)
     
     local pageSize = ParchmentReaderDB.pageSize or 25
     local totalPages = math.ceil(#lines / pageSize)
