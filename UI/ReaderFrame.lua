@@ -34,7 +34,7 @@ function ParchmentReader:CreateReaderFrame()
     -- Scrollable book list
     local scrollFrame = CreateFrame("ScrollFrame", nil, sidebar, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 4, -32)
-    scrollFrame:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -26, 36)
+    scrollFrame:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -26, 54)
 
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
     scrollChild:SetSize(140, 1)
@@ -44,8 +44,8 @@ function ParchmentReader:CreateReaderFrame()
 
     -- "Add Book" button at bottom of sidebar
     local addBookBtn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
-    addBookBtn:SetSize(140, 24)
-    addBookBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 42)
+    addBookBtn:SetSize(145, 24)
+    addBookBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 28)
     addBookBtn:SetText("+ Add Book")
     addBookBtn:SetScript("OnClick", function()
         ParchmentReader:ShowBookEditor(nil)
@@ -54,8 +54,8 @@ function ParchmentReader:CreateReaderFrame()
 
     -- "Hide Books" button
     local toggleBtn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
-    toggleBtn:SetSize(150, 24)
-    toggleBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 8)
+    toggleBtn:SetSize(145, 24)
+    toggleBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 4)
     toggleBtn:SetText("Hide Books")
     toggleBtn:SetScript("OnClick", function()
         ParchmentReader:ToggleSidebar()
@@ -156,14 +156,14 @@ function ParchmentReader:CreateReaderFrame()
     -- ═══════════════════════════════════════════════════════════════════════
 
     local prevBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    prevBtn:SetSize(100, 22)
+    prevBtn:SetSize(100, 24)
     prevBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 190, 10)
     prevBtn:SetText("< Previous")
     prevBtn:SetScript("OnClick", function() ParchmentReader:PrevPage() end)
     frame.prevButton = prevBtn
 
     local nextBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    nextBtn:SetSize(100, 22)
+    nextBtn:SetSize(100, 24)
     nextBtn:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -10, 10)
     nextBtn:SetText("Next >")
     nextBtn:SetScript("OnClick", function() ParchmentReader:NextPage() end)
