@@ -81,9 +81,11 @@ function ParchmentReader:CreateSettingsFrame()
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
         ParchmentReaderDB.windowWidth = value
-        
+
         if ParchmentReaderFrame then
             ParchmentReaderFrame:SetWidth(value)
+            -- Update content text width to match new window width
+            ParchmentReader:UpdateContentWidth()
         end
     end)
     

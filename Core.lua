@@ -308,6 +308,27 @@ function ParchmentReader:UpdateFont()
     self:UpdateReader()
 end
 
+-- ── update content width ───────────────────────────────────────────────────
+function ParchmentReader:UpdateContentWidth()
+    if not ParchmentReaderFrame or not ParchmentReaderFrame.contentText then return end
+
+    local frame = ParchmentReaderFrame
+    local parchment = frame.parchment
+
+    if not parchment then return end
+
+    -- Get the current width of parchment area
+    local parchmentWidth = parchment:GetWidth()
+
+    -- Calculate text width (parchment width - scrollbar - margins)
+    -- Margins: 8 left + 26 right (scrollbar) + 16 (contentChild padding)
+    local textWidth = parchmentWidth - 50
+
+    if textWidth > 0 then
+        frame.contentText:SetWidth(textWidth)
+    end
+end
+
 -- ── bootstrap ─────────────────────────────────────────────────────────────
 local _boot = CreateFrame("Frame")
 _boot:RegisterEvent("PLAYER_ENTERING_WORLD")
