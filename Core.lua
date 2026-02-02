@@ -30,6 +30,10 @@ end
 -- can safely read ParchmentReaderDB.pageSize.
 ParchmentReaderDB = ParchmentReaderDB or {}
 ApplyDefaults(ParchmentReaderDB)
+
+-- Гарантируем существование таблицы customBooks
+ParchmentReaderDB.customBooks = ParchmentReaderDB.customBooks or {}
+
 ParchmentReader.db = { profile = ParchmentReaderDB }
 
 -- Wrap long lines to a maximum width (characters per line)
@@ -71,26 +75,59 @@ end
 
 -- Load custom books from saved data
 local function LoadCustomBooks()
-    if not ParchmentReaderDB.customBooks then return end
+    print("|cFFFF0000DEBUG:|r LoadCustomBooks() called")
 
+    if not ParchmentReaderDB.customBooks then
+        print("|cFFFF0000DEBUG:|r ParchmentReaderDB.customBooks does NOT exist!")
+        return
+    end
+
+    -- Count how many books are in SavedVariables
+    local savedCount = 0
+    for _ in pairs(ParchmentReaderDB.customBooks) do
+        savedCount = savedCount + 1
+    end
+    print(string.format("|cFFFF0000DEBUG:|r Found %d books in SavedVariables", savedCount))
+
+    local count = 0
     for title, content in pairs(ParchmentReaderDB.customBooks) do
+        print(string.format("|cFFFF0000DEBUG:|r Loading book: '%s' (content length: %d)", title, #content))
+
         -- Wrap long lines automatically (max 100 chars per line)
         local lines = WrapText(content, 100)
-        
+        print(string.format("|cFFFF0000DEBUG:|r  - Wrapped into %d lines", #lines))
+
         local pageSize = ParchmentReaderDB.pageSize or 25
         local totalPages = math.ceil(#lines / pageSize)
         if totalPages < 1 then totalPages = 1 end
-        
+
         ParchmentReader.books[title] = {
             title = title,
             lines = lines,
             totalPages = totalPages,
             custom = true,
         }
+
+        count = count + 1
+    end
+
+    print(string.format("|cFFFF0000DEBUG:|r Loaded %d books into ParchmentReader.books", count))
+
+    -- Count total books in memory
+    local totalInMemory = 0
+    for _ in pairs(ParchmentReader.books) do
+        totalInMemory = totalInMemory + 1
+    end
+    print(string.format("|cFFFF0000DEBUG:|r Total books in memory: %d", totalInMemory))
+
+    if count > 0 then
+        print(string.format("|cFF33FF99ParchmentReader:|r Loaded %d custom book(s)", count))
     end
 end
 
-LoadCustomBooks()
+-- НЕ вызываем LoadCustomBooks() здесь - слишком рано!
+-- WoW еще не загрузил данные из SavedVariables в память.
+-- Вместо этого вызовем его в событии ADDON_LOADED.
 
 -- ── minimap icon ──────────────────────────────────────────────────────────
 local function PositionIcon(btn)
@@ -369,9 +406,21 @@ end
 
 -- ── bootstrap ─────────────────────────────────────────────────────────────
 local _boot = CreateFrame("Frame")
+_boot:RegisterEvent("ADDON_LOADED")
 _boot:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 _boot:SetScript("OnEvent", function(self, event, addonName)
+
+    if event == "ADDON_LOADED" and addonName == "ParchmentReader" then
+        -- SavedVariables теперь полностью загружены WoW
+        print("|cFFFF0000DEBUG:|r ADDON_LOADED event fired")
+
+        -- Загружаем пользовательские книги из SavedVariables
+        LoadCustomBooks()
+
+        -- Отменяем подписку на ADDON_LOADED, он нам больше не нужен
+        self:UnregisterEvent("ADDON_LOADED")
+    end
 
     if event == "PLAYER_ENTERING_WORLD" then
         if not ParchmentReader.minimapBtn then
@@ -383,7 +432,7 @@ _boot:SetScript("OnEvent", function(self, event, addonName)
         else
             ParchmentReader.minimapBtn:Show()
         end
-        
+
         print("|cFF33FF99Parchment Reader|r loaded – click the minimap icon to start reading.")
     end
 end)
