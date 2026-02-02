@@ -1,7 +1,7 @@
 ## Interface: 120000
 ## Title: Parchment Reader
 ## Notes: Simple book reader addon for reading text files in-game
-## Author: YourName
+## Author: Yaroslav Skvortsov
 ## Version: 1.0.0
 ## SavedVariables: BookReaderDB
 

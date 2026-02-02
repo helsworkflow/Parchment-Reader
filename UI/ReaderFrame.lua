@@ -103,7 +103,7 @@ function BookReader:CreateReaderFrame()
     contentChild:SetSize(contentScroll:GetWidth() - 10, 1)
     contentScroll:SetScrollChild(contentChild)
     
-    local contentText = contentChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local contentText = contentChild:CreateFontString(nil, "OVERLAY", "QuestFont")
     contentText:SetPoint("TOPLEFT", contentChild, "TOPLEFT", 8, -8)
     contentText:SetWidth(contentChild:GetWidth() - 16)
     contentText:SetJustifyH("LEFT")

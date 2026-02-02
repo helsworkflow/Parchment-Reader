@@ -47,7 +47,7 @@ function BookReader:CreateBookEditorFrame()
     local editBox = CreateFrame("EditBox", nil, scrollFrame)
     editBox:SetMultiLine(true)
     editBox:SetSize(scrollFrame:GetWidth() - 10, scrollFrame:GetHeight())
-    editBox:SetFontObject("ChatFontNormal")
+    editBox:SetFontObject("GameFontNormal")
     editBox:SetAutoFocus(false)
     editBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
     

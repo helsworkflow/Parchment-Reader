@@ -259,3 +259,22 @@ _boot:SetScript("OnEvent", function(self, event, addonName)
         print("|cFF33FF99Parchment Reader|r loaded – click the minimap icon to start reading.")
     end
 end)
+
+-- ── slash commands ────────────────────────────────────────────────────────
+SLASH_BOOKREADER1 = "/br"
+SLASH_BOOKREADER2 = "/bookreader"
+SlashCmdList["BOOKREADER"] = function(msg)
+    msg = strtrim(msg):lower()
+
+    if msg == "reload" or msg == "reset" then
+        -- Recreate the reader frame to apply UI changes
+        if BookReaderFrame then
+            BookReaderFrame:Hide()
+            BookReaderFrame = nil
+        end
+        print("|cFF33FF99BookReader:|r Frame reset. Open the reader again to see changes.")
+    else
+        -- Default: toggle the reader
+        BookReader:ToggleReader()
+    end
+end
