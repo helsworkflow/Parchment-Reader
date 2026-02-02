@@ -29,6 +29,7 @@ local function RegisterBook(bookName, bookContent)
         title      = bookName,
         lines      = lines,
         totalPages = totalPages,
+        custom     = true,  -- mark as editable
     }
 end
 
