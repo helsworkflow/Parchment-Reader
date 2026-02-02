@@ -221,7 +221,8 @@ function ParchmentReader:RefreshBookList()
         local btn = CreateFrame("Button", nil, scrollChild)
         btn:SetSize(150, buttonHeight)
         btn:SetPoint("TOPLEFT", 0, -yOffset)
-        
+        btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
         -- Background
         local bg = btn:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints()
