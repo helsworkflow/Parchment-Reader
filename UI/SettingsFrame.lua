@@ -26,19 +26,19 @@ function ParchmentReader:CreateSettingsFrame()
     local pageSizeSlider = CreateFrame("Slider", "ParchmentReaderPageSizeSlider", frame, "OptionsSliderTemplate")
     pageSizeSlider:SetPoint("TOPLEFT", pageSizeText, "BOTTOMLEFT", 0, -10)
     pageSizeSlider:SetMinMaxValues(10, 50)
-    pageSizeSlider:SetValue(self.db.profile.pageSize)
+    pageSizeSlider:SetValue(ParchmentReaderDB.pageSize or 25)
     pageSizeSlider:SetValueStep(1)
     pageSizeSlider:SetObeyStepOnDrag(true)
     pageSizeSlider:SetWidth(300)
-    
+
     _G[pageSizeSlider:GetName().."Low"]:SetText("10")
     _G[pageSizeSlider:GetName().."High"]:SetText("50")
-    _G[pageSizeSlider:GetName().."Text"]:SetText(self.db.profile.pageSize)
-    
+    _G[pageSizeSlider:GetName().."Text"]:SetText(ParchmentReaderDB.pageSize or 25)
+
     pageSizeSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        ParchmentReader.db.profile.pageSize = value
+        ParchmentReaderDB.pageSize = value
         
         -- Recalculate all books' page counts
         for bookName, book in pairs(ParchmentReader.books) do
@@ -68,19 +68,19 @@ function ParchmentReader:CreateSettingsFrame()
     local widthSlider = CreateFrame("Slider", "ParchmentReaderWidthSlider", frame, "OptionsSliderTemplate")
     widthSlider:SetPoint("TOPLEFT", widthText, "BOTTOMLEFT", 0, -10)
     widthSlider:SetMinMaxValues(400, 1000)
-    widthSlider:SetValue(self.db.profile.windowWidth)
+    widthSlider:SetValue(ParchmentReaderDB.windowWidth or 600)
     widthSlider:SetValueStep(50)
     widthSlider:SetObeyStepOnDrag(true)
     widthSlider:SetWidth(300)
-    
+
     _G[widthSlider:GetName().."Low"]:SetText("400")
     _G[widthSlider:GetName().."High"]:SetText("1000")
-    _G[widthSlider:GetName().."Text"]:SetText(self.db.profile.windowWidth)
-    
+    _G[widthSlider:GetName().."Text"]:SetText(ParchmentReaderDB.windowWidth or 600)
+
     widthSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        ParchmentReader.db.profile.windowWidth = value
+        ParchmentReaderDB.windowWidth = value
         
         if ParchmentReaderFrame then
             ParchmentReaderFrame:SetWidth(value)
@@ -97,19 +97,19 @@ function ParchmentReader:CreateSettingsFrame()
     local heightSlider = CreateFrame("Slider", "ParchmentReaderHeightSlider", frame, "OptionsSliderTemplate")
     heightSlider:SetPoint("TOPLEFT", heightText, "BOTTOMLEFT", 0, -10)
     heightSlider:SetMinMaxValues(300, 800)
-    heightSlider:SetValue(self.db.profile.windowHeight)
+    heightSlider:SetValue(ParchmentReaderDB.windowHeight or 450)
     heightSlider:SetValueStep(50)
     heightSlider:SetObeyStepOnDrag(true)
     heightSlider:SetWidth(300)
-    
+
     _G[heightSlider:GetName().."Low"]:SetText("300")
     _G[heightSlider:GetName().."High"]:SetText("800")
-    _G[heightSlider:GetName().."Text"]:SetText(self.db.profile.windowHeight)
-    
+    _G[heightSlider:GetName().."Text"]:SetText(ParchmentReaderDB.windowHeight or 450)
+
     heightSlider:SetScript("OnValueChanged", function(self, value)
         value = math.floor(value)
         _G[self:GetName().."Text"]:SetText(value)
-        ParchmentReader.db.profile.windowHeight = value
+        ParchmentReaderDB.windowHeight = value
         
         if ParchmentReaderFrame then
             ParchmentReaderFrame:SetHeight(value)
