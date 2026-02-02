@@ -29,25 +29,38 @@ function BookReader:CreateReaderFrame()
     local sidebarTitle = sidebar:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     sidebarTitle:SetPoint("TOP", sidebar, "TOP", 0, -8)
     sidebarTitle:SetText("Books")
+    frame.sidebarTitle = sidebarTitle
     
     -- Scrollable book list
     local scrollFrame = CreateFrame("ScrollFrame", nil, sidebar, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOPLEFT", sidebar, "TOPLEFT", 4, -32)
     scrollFrame:SetPoint("BOTTOMRIGHT", sidebar, "BOTTOMRIGHT", -26, 36)
-    
+
     local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetSize(150, 1)
+    scrollChild:SetSize(140, 1)
     scrollFrame:SetScrollChild(scrollChild)
     frame.bookListScroll = scrollChild
-    
+    frame.sidebarScroll = scrollFrame
+
     -- "Add Book" button at bottom of sidebar
     local addBookBtn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
-    addBookBtn:SetSize(160, 24)
-    addBookBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 8)
+    addBookBtn:SetSize(140, 24)
+    addBookBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 42)
     addBookBtn:SetText("+ Add Book")
     addBookBtn:SetScript("OnClick", function()
         BookReader:ShowBookEditor(nil)
     end)
+    frame.addBookBtn = addBookBtn
+
+    -- "Hide Books" button
+    local toggleBtn = CreateFrame("Button", nil, sidebar, "UIPanelButtonTemplate")
+    toggleBtn:SetSize(150, 24)
+    toggleBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 8)
+    toggleBtn:SetText("Hide Books")
+    toggleBtn:SetScript("OnClick", function()
+        BookReader:ToggleSidebar()
+    end)
+    frame.toggleBtn = toggleBtn
     
     -- ═══════════════════════════════════════════════════════════════════════
     -- RIGHT SIDE: Parchment content area
@@ -56,6 +69,8 @@ function BookReader:CreateReaderFrame()
     local parchment = CreateFrame("Frame", nil, frame)
     parchment:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 4, -24)
     parchment:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 44)
+    frame.parchment = parchment
+    frame.sidebar = sidebar
     
     -- Parchment background (warm beige)
     local parchBg = parchment:CreateTexture(nil, "BACKGROUND")
@@ -93,7 +108,7 @@ function BookReader:CreateReaderFrame()
     borderRight:SetPoint("BOTTOMRIGHT", parchment, "BOTTOMRIGHT", 0, 0)
     borderRight:SetWidth(2)
     borderRight:SetColorTexture(bColor[1], bColor[2], bColor[3], 0.8)
-    
+
     -- Content text (scrollable)
     local contentScroll = CreateFrame("ScrollFrame", nil, parchment, "UIPanelScrollFrameTemplate")
     contentScroll:SetPoint("TOPLEFT", parchment, "TOPLEFT", 8, -8)
@@ -102,14 +117,34 @@ function BookReader:CreateReaderFrame()
     local contentChild = CreateFrame("Frame", nil, contentScroll)
     contentChild:SetSize(contentScroll:GetWidth() - 10, 1)
     contentScroll:SetScrollChild(contentChild)
-    
-    local contentText = contentChild:CreateFontString(nil, "OVERLAY", "QuestFont")
+
+    local contentText = contentChild:CreateFontString(nil, "OVERLAY")
     contentText:SetPoint("TOPLEFT", contentChild, "TOPLEFT", 8, -8)
     contentText:SetWidth(contentChild:GetWidth() - 16)
     contentText:SetJustifyH("LEFT")
     contentText:SetJustifyV("TOP")
     contentText:SetSpacing(2)
     contentText:SetTextColor(0.1, 0.1, 0.1)
+
+    -- Apply font settings
+    local fontName = BookReaderDB.fontName or "QuestFont"
+    local fontSize = BookReaderDB.fontSize or 14
+
+    if fontName:match("%.TTF$") then
+        -- If it's a TTF file
+        contentText:SetFont("Fonts\\" .. fontName, fontSize)
+    else
+        -- If it's a font object (QuestFont, GameFontNormal, etc)
+        local fontObject = _G[fontName]
+        if fontObject then
+            local file, height, flags = fontObject:GetFont()
+            contentText:SetFont(file, fontSize, flags)
+        else
+            -- Fallback
+            contentText:SetFont("Fonts\\FRIZQT__.TTF", fontSize)
+        end
+    end
+
     contentText:SetText("Select a book from the list on the left.")
     frame.contentText = contentText
     
@@ -141,10 +176,15 @@ function BookReader:CreateReaderFrame()
     -- ═══════════════════════════════════════════════════════════════════════
     -- Populate book list
     -- ═══════════════════════════════════════════════════════════════════════
-    
+
     frame.bookButtons = {}
     self:RefreshBookList()
-    
+
+    -- Apply saved sidebar state
+    if BookReaderDB.sidebarCollapsed then
+        self:ToggleSidebar()
+    end
+
     frame:Hide()
     return frame
 end

@@ -2,7 +2,7 @@
 
 function BookReader:CreateSettingsFrame()
     local frame = CreateFrame("Frame", "BookReaderSettingsFrame", UIParent, "BasicFrameTemplateWithInset")
-    frame:SetSize(400, 300)
+    frame:SetSize(400, 500)
     frame:SetPoint("CENTER")
     frame:SetMovable(true)
     frame:EnableMouse(true)
@@ -117,7 +117,71 @@ function BookReader:CreateSettingsFrame()
     end)
     
     yOffset = yOffset - spacing - 30
-    
+
+    -- Font Selection Dropdown
+    local fontText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    fontText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
+    fontText:SetText("Font:")
+
+    local fontDropdown = CreateFrame("Frame", "BookReaderFontDropdown", frame, "UIDropDownMenuTemplate")
+    fontDropdown:SetPoint("TOPLEFT", fontText, "BOTTOMLEFT", -15, -5)
+
+    UIDropDownMenu_Initialize(fontDropdown, function(self, level)
+        local info = UIDropDownMenu_CreateInfo()
+
+        local fonts = {
+            {name = "QuestFont", display = "Quest Font"},
+            {name = "GameFontNormal", display = "Game Font"},
+            {name = "ChatFontNormal", display = "Chat Font"},
+            {name = "SystemFont_Med1", display = "System Font"},
+            {name = "FRIZQT__.TTF", display = "Friz Quadrata"},
+            {name = "MORPHEUS.TTF", display = "Morpheus"},
+        }
+
+        for _, font in ipairs(fonts) do
+            info.text = font.display
+            info.value = font.name
+            info.func = function()
+                BookReaderDB.fontName = font.name
+                UIDropDownMenu_SetSelectedValue(fontDropdown, font.name)
+                BookReader:UpdateFont()
+            end
+            info.checked = (BookReaderDB.fontName == font.name)
+            UIDropDownMenu_AddButton(info)
+        end
+    end)
+
+    UIDropDownMenu_SetWidth(fontDropdown, 150)
+    UIDropDownMenu_SetSelectedValue(fontDropdown, BookReaderDB.fontName or "QuestFont")
+
+    yOffset = yOffset - 60
+
+    -- Font Size Slider
+    local fontSizeText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    fontSizeText:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)
+    fontSizeText:SetText("Font size:")
+
+    local fontSizeSlider = CreateFrame("Slider", "BookReaderFontSizeSlider", frame, "OptionsSliderTemplate")
+    fontSizeSlider:SetPoint("TOPLEFT", fontSizeText, "BOTTOMLEFT", 0, -10)
+    fontSizeSlider:SetMinMaxValues(8, 24)
+    fontSizeSlider:SetValue(BookReaderDB.fontSize or 14)
+    fontSizeSlider:SetValueStep(1)
+    fontSizeSlider:SetObeyStepOnDrag(true)
+    fontSizeSlider:SetWidth(300)
+
+    _G[fontSizeSlider:GetName().."Low"]:SetText("8")
+    _G[fontSizeSlider:GetName().."High"]:SetText("24")
+    _G[fontSizeSlider:GetName().."Text"]:SetText(BookReaderDB.fontSize or 14)
+
+    fontSizeSlider:SetScript("OnValueChanged", function(self, value)
+        value = math.floor(value)
+        _G[self:GetName().."Text"]:SetText(value)
+        BookReaderDB.fontSize = value
+        BookReader:UpdateFont()
+    end)
+
+    yOffset = yOffset - spacing - 30
+
     -- Minimap Button Toggle
     local minimapCheck = CreateFrame("CheckButton", "BookReaderMinimapCheck", frame, "InterfaceOptionsCheckButtonTemplate")
     minimapCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, yOffset)

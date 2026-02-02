@@ -15,6 +15,8 @@ local DEFAULTS = {
     windowWidth     = 600,
     windowHeight    = 450,
     minimapAngle    = 315,
+    fontSize        = 14,
+    fontName        = "QuestFont",
 }
 
 local function ApplyDefaults(t)
@@ -160,6 +162,47 @@ function BookReader:ToggleSettings()
     end
 end
 
+function BookReader:ToggleSidebar()
+    if not BookReaderFrame then return end
+
+    BookReaderDB.sidebarCollapsed = not BookReaderDB.sidebarCollapsed
+
+    local frame = BookReaderFrame
+    local sidebar = frame.sidebar
+    local parchment = frame.parchment
+    local toggleBtn = frame.toggleBtn
+
+    if BookReaderDB.sidebarCollapsed then
+        -- Collapse: hide sidebar completely
+        sidebar:Hide()
+
+        -- Move toggle button to bottom left corner of main frame
+        toggleBtn:SetParent(frame)
+        toggleBtn:ClearAllPoints()
+        toggleBtn:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 10, 10)
+        toggleBtn:SetText("Show Books")
+
+        -- Reposition parchment to fill the whole area
+        parchment:ClearAllPoints()
+        parchment:SetPoint("TOPLEFT", frame, "TOPLEFT", 4, -24)
+        parchment:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 44)
+    else
+        -- Expand: show sidebar
+        sidebar:Show()
+
+        -- Move toggle button back to sidebar
+        toggleBtn:SetParent(sidebar)
+        toggleBtn:ClearAllPoints()
+        toggleBtn:SetPoint("BOTTOM", sidebar, "BOTTOM", 0, 8)
+        toggleBtn:SetText("Hide Books")
+
+        -- Reposition parchment to be next to sidebar
+        parchment:ClearAllPoints()
+        parchment:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 4, -24)
+        parchment:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 44)
+    end
+end
+
 -- ── book management ───────────────────────────────────────────────────────
 function BookReader:LoadBook(bookName)
     if not self.books[bookName] then
@@ -237,6 +280,32 @@ function BookReader:UpdateReader()
     else
         BookReaderFrame.nextButton:Disable()
     end
+end
+
+-- ── update font ────────────────────────────────────────────────────────────
+function BookReader:UpdateFont()
+    if not BookReaderFrame or not BookReaderFrame.contentText then return end
+
+    local contentText = BookReaderFrame.contentText
+    local fontName = BookReaderDB.fontName or "QuestFont"
+    local fontSize = BookReaderDB.fontSize or 14
+
+    if fontName:match("%.TTF$") then
+        -- If it's a TTF file
+        contentText:SetFont("Fonts\\" .. fontName, fontSize)
+    else
+        -- If it's a font object (QuestFont, GameFontNormal, etc)
+        local fontObject = _G[fontName]
+        if fontObject then
+            local file, height, flags = fontObject:GetFont()
+            contentText:SetFont(file, fontSize, flags)
+        else
+            -- Fallback
+            contentText:SetFont("Fonts\\FRIZQT__.TTF", fontSize)
+        end
+    end
+
+    self:UpdateReader()
 end
 
 -- ── bootstrap ─────────────────────────────────────────────────────────────
