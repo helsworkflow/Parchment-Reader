@@ -113,10 +113,13 @@ function ParchmentReader:CreateReaderFrame()
     local contentScroll = CreateFrame("ScrollFrame", nil, parchment, "UIPanelScrollFrameTemplate")
     contentScroll:SetPoint("TOPLEFT", parchment, "TOPLEFT", 8, -4)
     contentScroll:SetPoint("BOTTOMRIGHT", parchment, "BOTTOMRIGHT", -26, 4)
-    
+
     local contentChild = CreateFrame("Frame", nil, contentScroll)
     contentChild:SetSize(contentScroll:GetWidth() - 10, 1)
     contentScroll:SetScrollChild(contentChild)
+
+    -- Save reference to scroll frame for later use
+    frame.contentScroll = contentScroll
 
     local contentText = contentChild:CreateFontString(nil, "OVERLAY")
     contentText:SetPoint("TOPLEFT", contentChild, "TOPLEFT", 8, -8)

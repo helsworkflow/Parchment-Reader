@@ -320,6 +320,11 @@ function ParchmentReader:UpdateReader()
     ParchmentReaderFrame.pageText:SetText(
         string.format("Page %d / %d", self.currentPage, book.totalPages))
 
+    -- Reset scroll to top when changing pages
+    if ParchmentReaderFrame.contentScroll then
+        ParchmentReaderFrame.contentScroll:SetVerticalScroll(0)
+    end
+
     if self.currentPage > 1 then
         ParchmentReaderFrame.prevButton:Enable()
     else
