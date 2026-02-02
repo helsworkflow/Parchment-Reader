@@ -201,6 +201,9 @@ function ParchmentReader:ToggleSidebar()
         parchment:SetPoint("TOPLEFT", sidebar, "TOPRIGHT", 4, -24)
         parchment:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, 44)
     end
+
+    -- Update text width to match new parchment size
+    self:UpdateContentWidth()
 end
 
 -- ── book management ───────────────────────────────────────────────────────
